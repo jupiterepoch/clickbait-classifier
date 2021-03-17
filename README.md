@@ -9,9 +9,9 @@ The dataset for the project is stored on [Jbox](https://jbox.sjtu.edu.cn:10081/v
 
 ## Sources
 
-[Stop Clickbait: Detecting and Preventing Clickbaits in Online News Media](./sources/1610.09786.pdf)
+[Stop Clickbait: Detecting and Preventing Clickbaits in Online News Media](https://arxiv.org/pdf/1610.09786.pdf)
 
-[Clickbait Detection in Tweets Using Self-attentive Network](./sources/1710.05364.pdf)
+[Clickbait Detection in Tweets Using Self-attentive Network](https://arxiv.org/pdf/1710.05364.pdf)
 
-[Crowdsourcing a Large Corpus of Clickbait on Twitter](.sources/C18-1127.pdf)
+[Crowdsourcing a Large Corpus of Clickbait on Twitter](https://www.aclweb.org/anthology/C18-1127.pdf)
 
