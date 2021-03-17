@@ -18,7 +18,7 @@ def get_truths(annotator="majority"):
     if not os.path.exists(truth_file_path):
         print(f"Ground truth {truth_file_path} does not exist!")
         exit(1)
-    df = pd.read_csv(truth_file_path)
+    df = pd.read_csv(truth_file_path, header=None)
     df.columns = ['tweet_id', 'clickbaitness']
     df = df.replace({ 'clickbaitness' : {'no-clickbait':0, 'clickbait':1} })
     ground_truth = df.set_index('tweet_id').to_dict()['clickbaitness']
@@ -26,6 +26,7 @@ def get_truths(annotator="majority"):
 
 def main():
     ground_truth = get_truths()
+    print(ground_truth)
 
 if __name__ == '__main__':
     main()
