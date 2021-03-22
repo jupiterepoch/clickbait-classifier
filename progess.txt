@@ -1,3 +1,13 @@
 1. changes: change dataset from webis16 -> webis17
  	reason: larger dataset, better format
+	 
 2. data cleaning, selection, feature generation
+	use targetTitle and targetParagraph as corpus
+	use mean score as target
+
+3. methods or models:
+	embeddings: word2vec / GloVe / BERT
+	model: attention (self-attention), from reference material
+
+4. ...
+5. ...
