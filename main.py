@@ -41,7 +41,7 @@ class Webis17:
     def get_truths(self):
         df = pd.read_json(self.truth_file, lines=True)
         print(df)
-        return df['', 'truthMean'].to_numpy()
+        return df['id', 'truthMean'].to_numpy()
 
 def main():
     web16 = Webis16()
