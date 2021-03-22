@@ -5,6 +5,7 @@ import os
 import pdb
 
 truth_path = './data/webis-clickbait-16/truth/'
+problem_path = './data/webis-clickbait-16/problems/'
 
 
 def get_truths(annotator="majority"):
@@ -24,9 +25,17 @@ def get_truths(annotator="majority"):
     ground_truth = df.set_index('tweet_id').to_dict()['clickbaitness']
     return ground_truth
 
+def get_tweet_content(filename=problem_path+'607668877594497024/607668877594497024.html'):
+    from bs4 import BeautifulSoup
+    f = open(filename, 'r')
+    soup = BeautifulSoup(f.read())
+    print(soup.prettify())
+    f.close()
+
+
 def main():
-    ground_truth = get_truths()
-    print(ground_truth)
+    #ground_truth = get_truths()
+    get_tweet_content()
 
 if __name__ == '__main__':
     main()

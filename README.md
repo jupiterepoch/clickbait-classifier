@@ -5,7 +5,7 @@ A self-attentive network based "clickbait" classifier.
 
 ## Data
 
-The dataset for the project is stored on [Jbox](https://jbox.sjtu.edu.cn:10081/v2/delivery/data/3b6bfebc7b254f98bfe5754bd5f1eb09/corpus-webis-clickbait-16.zip?dup_t=1614218615229)
+The dataset for the project is stored on [Jbox](https://jbox.sjtu.edu.cn/l/lFk4Ce)
 
 ## Sources
 
