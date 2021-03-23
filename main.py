@@ -143,8 +143,8 @@ def demo():
 
 
 def main():
-    web17.build_corpus(size=1000)
-    demo()
+    web17.build_corpus(size=19538)
+    #demo()
 
 if __name__ == '__main__':
     main()
