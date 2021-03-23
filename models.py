@@ -29,6 +29,12 @@ class Attention_Model(nn.Module):
 from transformers import AutoTokenizer, AutoModel
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
+class Finetune_BERT(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers):
+        super(Finetune_BERT, self).__init__()
+        
+
+
 
 class Hugging_Model():
     def play():
