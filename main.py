@@ -49,22 +49,20 @@ class Webis17:
         self.truth_file = path + 'truth.jsonl'
         self.problem_file = path + 'instances.jsonl'
 
-    def get_truths(self, size=-1):
+    def get_truths(self, size=100):
         df = pd.read_json(self.truth_file, lines=True)
         df = df.loc[:size, :]
         #print(df)
         return df['id'], df['truthMean'].values
 
-    def get_texts(self, size=-1):
+    def get_texts(self, size=100):
         df = pd.read_json(self.problem_file, lines=True)
         df = df.loc[:size, :]
         #print(df)
         #print(df.columns)
         return df['id'], df['targetTitle'], df['targetParagraphs']
 
-    def build_corpus(self, size=-1):
-        # size = 3
-        # TODO: tweet id is a int64, check for overflow!
+    def build_corpus(self, size=100):
         (truth_id, label) = self.get_truths(size)
         ground_truth = {truth_id[i] : label[i] for i in range(len(label))}
         (tweet_id, titles, texts) = self.get_texts(size)
@@ -72,7 +70,9 @@ class Webis17:
             try:
                 self.corpus.append( (titles[i], ' '.join(txt for txt in texts[i]), ground_truth[tid]) ) # tid is discarded from now on
             except KeyError:
-                print(f'Tweet {tid} is not in ground truth!')
+                pass
+                #print(f'Tweet {tid} is not in ground truth!')
+        print(f'Getting {len(self.corpus)} valid examples from training set.')
 
 class Trainset():
     #from torch.utils.data import Dataset
