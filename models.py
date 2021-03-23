@@ -1,3 +1,6 @@
+import torch
+import torch.nn as nn
+
 class Attention_Model(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers): # , batch_size
         super(Attention_Model, self).__init__()
@@ -22,3 +25,25 @@ class Attention_Model(nn.Module):
         #out1 = self.dense(input1).squeeze()
         #out2 = self.dense(input2).squeeze()
         return 1 + 4 * self.cos(out1, out2)
+
+from transformers import AutoTokenizer, AutoModel
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+
+
+class Hugging_Model():
+    def play():
+        pass
+
+''' junk yard below
+
+class Tweet:
+        tid = None # tweet id
+        title = None
+        text = None
+        label = None
+        def __init__(self, tid, title, text):
+            self.tid = tid
+            self.title = title
+            self.text = text
+
+'''

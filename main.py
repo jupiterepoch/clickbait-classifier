@@ -2,12 +2,14 @@ import pandas as pd
 import numpy as np
 import os
 
-import torch
-import torch.nn as nn
+import logging
 
 from models import Attention_Model
+from models import Hugging_Model
 
 import pdb
+
+#logger = logging.basicConfig(level=info)
 
 class Webis16:
     def __init__(self):
@@ -39,19 +41,9 @@ class Webis16:
         f.close()
 
 class Webis17:
-    class Tweet:
-        tid = None # tweet id
-        title = None
-        text = None
-        label = None
-        def __init__(self, tid, title, text):
-            self.tid = tid
-            self.title = title
-            self.text = text
-
     truth_file = None
     problem_file = None
-    tweets = {}
+    corpus = [] # (title, paragraphs, label)
 
     def __init__(self, path):
         self.truth_file = path + 'truth.jsonl'
@@ -68,26 +60,65 @@ class Webis17:
         df = df.loc[:size, :]
         print(df)
         print(df.columns)
-        # postText are always len=1 list
-        for t in df:
-            self.tweets[t['id']] = Tweet(t['id'], t['targetTitle'].values[0], t['targetParagraphs'].values[0])
-        # return df['id'], df['targetTitle'].values[0], df['targetParagraphs'].values[0]
+        return df['id'], df['targetTitle'], df['targetParagraphs']
 
-    def preprocessing(self):
-        from transformers import BertTokenizer
-        for t in self.tweets:
-            print(t.title)
+    def build_corpus(self):
+        size = 10
+        # TODO: tweet id is a int64, check for overflow!
+        (truth_id, label) = self.get_truths(size)
+        ground_truth = {truth_id[i] : label[i] for i in range(len(label))}
+        (tweet_id, titles, texts) = self.get_texts(size)
+        for i, tid in enumerate(tweet_id):
+            try:
+                self.corpus.append( (titles[i], ' '.join(txt for txt in texts[i]), ground_truth[tid]) ) # tid is discarded from now on
+            except KeyError:
+                print(f'Tweet {tid} is not in ground truth!')
+
+class Trainset():
+    from torch.utils.data import Dataset
+    from torch.utils.data import DataLoader
+    def __init__(self):
+        super(Dataset, self).__init__()
+    def __getitem__(self, i):
+        title, text, label = web17.corpus[i]
+        return (title, text, label)
+    def __len__(self):
+        return len(web17.corpus)
+
+web17 = Webis17('./data/clickbait17/')
+trainset = Trainset()
+
+
+def demo():
+    import torch
+    import torch.nn as nn
+    from transformers import AutoTokenizer, AutoModel
+    COS = torch.nn.CosineSimilarity()
+
+
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    bert_model = AutoModel.from_pretrained("bert-base-uncased")
+    batch_size = 32
+    train_loader = torch.utils.data.DataLoader( trainset, batch_size )
+    
+    truths = []
+    preds = []
+    for title, text, label in train_loader:
+        truths.append(label)
+        input1 = tokenizer(title)
+        input2 = tokenizer(text)
+        outputs1 = bert_model(title)
+        outputs2 = bert_model(text)
+        preds.append(COS(outputs1, outputs2))
+
+    loss = torch.nn.MSELoss()
+    print(f'Loss for naive similarity model is {loss(preds, truths)}')
+
 
 
 def main():
-    web17 = Webis17('./data/clickbait17/')
-    size = 10
-    # TODO: tweet id is a int64, check for overflow!
-    (truth_id, label) = web17.get_truths(size)
-    web17.preprocessing()
-    #(tweet_id, titles, texts) = web17.get_texts(size)
-    #print(titles[0])
-    #print(texts[0])
+    web17.build_corpus()
+    demo()
 
 if __name__ == '__main__':
     main()
