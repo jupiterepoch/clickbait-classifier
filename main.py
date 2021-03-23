@@ -52,18 +52,18 @@ class Webis17:
     def get_truths(self, size=-1):
         df = pd.read_json(self.truth_file, lines=True)
         df = df.loc[:size, :]
-        print(df)
+        #print(df)
         return df['id'], df['truthMean'].values
 
     def get_texts(self, size=-1):
         df = pd.read_json(self.problem_file, lines=True)
         df = df.loc[:size, :]
-        print(df)
-        print(df.columns)
+        #print(df)
+        #print(df.columns)
         return df['id'], df['targetTitle'], df['targetParagraphs']
 
-    def build_corpus(self):
-        size = 10
+    def build_corpus(self, size=-1):
+        # size = 3
         # TODO: tweet id is a int64, check for overflow!
         (truth_id, label) = self.get_truths(size)
         ground_truth = {truth_id[i] : label[i] for i in range(len(label))}
@@ -75,10 +75,10 @@ class Webis17:
                 print(f'Tweet {tid} is not in ground truth!')
 
 class Trainset():
-    from torch.utils.data import Dataset
-    from torch.utils.data import DataLoader
+    #from torch.utils.data import Dataset
+    #from torch.utils.data import DataLoader
     def __init__(self):
-        super(Dataset, self).__init__()
+        super(Trainset, self).__init__()
     def __getitem__(self, i):
         title, text, label = web17.corpus[i]
         return (title, text, label)
@@ -88,12 +88,25 @@ class Trainset():
 web17 = Webis17('./data/clickbait17/')
 trainset = Trainset()
 
+def get_attentions(outputs, layer=0, attention_head=0, avg=False):
+    '''
+    get the particular output for a particular layer and attention head
+    layer -> 0 to 11
+    attention_head -> 0 to 11
+    '''
+    if avg:
+        #avg over all attention heads in a layer
+        return outputs[layer].squeeze(0).mean(dim=0)  
+    #return values for a particular attention head inside a specific layer
+    return outputs[layer].squeeze(0)[attention_head]
+
 
 def demo():
     import torch
     import torch.nn as nn
+    import numpy as np
     from transformers import AutoTokenizer, AutoModel
-    COS = torch.nn.CosineSimilarity()
+    COS = torch.nn.CosineSimilarity(dim=0)
 
 
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
@@ -103,21 +116,34 @@ def demo():
     
     truths = []
     preds = []
-    for title, text, label in train_loader:
+    # for (title, text, label) in train_loader:
+    for tweet in web17.corpus:
+        # fixme: using only first 512 to bypass an error
+        title, text, label = tweet[0], tweet[1][:512], tweet[2]
+        #print('@',title, text, '@')
         truths.append(label)
-        input1 = tokenizer(title)
-        input2 = tokenizer(text)
-        outputs1 = bert_model(title)
-        outputs2 = bert_model(text)
-        preds.append(COS(outputs1, outputs2))
-
-    loss = torch.nn.MSELoss()
-    print(f'Loss for naive similarity model is {loss(preds, truths)}')
-
+        input1 = tokenizer(title, return_tensors="pt")
+        input2 = tokenizer(text, return_tensors="pt")
+        with torch.no_grad():
+            outputs1 = bert_model(**input1)
+            outputs2 = bert_model(**input2)
+            attention1 = get_attentions(outputs1).detach()
+            attention2 = get_attentions(outputs2).detach()
+            preds.append( COS(attention1, attention2).item() )
+        #print(attention1.shape, attention2.shape)
+        #print( COS(attention1, attention2) )
+    #print(preds[0])
+    #loss = torch.nn.MSELoss()
+    #print(f'Loss for naive similarity model is {loss(np.array(preds), np.array(truths))}')
+    import json
+    with open('preds.json', 'w') as fout:
+        json.dump ( preds, fout, indent=4 )
+    with open('truths.json', 'w') as fout:
+        json.dump ( truths, fout, indent=4 )
 
 
 def main():
-    web17.build_corpus()
+    web17.build_corpus(size=1000)
     demo()
 
 if __name__ == '__main__':
