@@ -8,6 +8,7 @@
 3. methods or models:
 	embeddings: word2vec / GloVe / BERT
 	model: attention (self-attention), from reference material
+	zcs implemented model: using BERT to treat the task as a binary classification. For each tweet, we pair each and every sentence in the paragraphs to the tweet title, and then the results are concatenated before fed into a dense layer. The intuition is that, the model, with finetuning, could learn the correlation between the text in the tweet and its title, in doing so determining whether the title is a click-bait that draws people to useless contents. The performance of the model is documented in the experiments section.
 
 4. ...
 5. ...
