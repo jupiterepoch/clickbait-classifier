@@ -1,4 +1,5 @@
 .vscode/
+junk/
 __pycache__/
 corpus-webis*
 .env
@@ -9,5 +10,5 @@ ENV/
 env.bak/
 venv.bak/
 webis-clickbait-16/
-data/
+#data/
 .ipynb_checkpoints
