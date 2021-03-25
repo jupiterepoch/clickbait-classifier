@@ -72,3 +72,96 @@ def finetune_bert():
     encoding = tokenizer(text_batch, return_tensors='pt', padding=True, truncation=True)
     input_ids = encoding['input_ids']
     attention_mask = encoding['attention_mask']
+
+def finetune_bert:
+    import torch.nn as nn
+    bert_model.train()
+    def finetune():
+        ''' make word embeddings of a given corpus '''
+        ''' then dump all the results in .pkl files for later use '''
+        for sentence in train_sentences[:size]:
+            sentence = sentence[0]
+            print(sentence)
+            tokenized = tokenizer.tokenize(sentence)
+            indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized)
+            indexed_tokens = torch.tensor([indexed_tokens])
+            segment_ids = [1] * len(tokenized)
+            segment_ids = torch.tensor([segment_ids])
+            #with torch.no_grad():
+            outputs = bert_model(indexed_tokens, segment_ids)
+            print(outputs.shape)
+            print(outputs.dtype)
+
+
+    finetune()
+    from transformers import BertForSequenceClassification, AdamW, BertConfig
+
+    # Load BertForSequenceClassification, the pretrained BERT model with a single 
+    # linear classification layer on top. 
+    bert_classi = BertForSequenceClassification.from_pretrained(
+        "bert-base-uncased", # Use the 12-layer BERT model, with an uncased vocab.
+        num_labels = 2, # The number of output labels--2 for binary classification.
+                        # You can increase this for multi-class tasks.   
+        output_attentions = False, # Whether the model returns attentions weights.
+        output_hidden_states = False, # Whether the model returns all hidden-states.
+    )
+
+    from transformers import BertTokenizer
+    input_ids = []
+    attention_masks = []
+    for sent in train_sentences:
+        sent = sent[0]
+        encoded_dict = tokenizer.encode_plus(
+                            sent,                      # Sentence to encode.
+                            add_special_tokens = False, # Add '[CLS]' and '[SEP]'
+                            max_length = 512,           # Pad & truncate all sentences.
+                            pad_to_max_length = True,
+                            return_attention_mask = True,   # Construct attn. masks.
+                            return_tensors = 'pt',     # Return pytorch tensors.
+                    )
+        
+        # Add the encoded sentence to the list.    
+        input_ids.append(encoded_dict['input_ids'])
+        
+        # And its attention mask (simply differentiates padding from non-padding).
+        attention_masks.append(encoded_dict['attention_mask'])
+
+    # Convert the lists into tensors.
+    input_ids = torch.cat(input_ids, dim=0)
+    attention_masks = torch.cat(attention_masks, dim=0)
+
+    optimizer = AdamW(model.parameters(), lr=2e-5)
+    MAX_LEN = 100
+    for epoch in range(10):
+        print(f'======== Epoch {epoch} ========')
+        bert_classi.train()
+        b_input_ids = input_ids[:MAX_LEN]
+        b_input_mask = attention_masks[:MAX_LEN]
+        b_labels = labels[:MAX_LEN]
+        bert_classi.zero_grad()        
+        loss, logits = bert_classi(b_input_ids, 
+                                token_type_ids=None, 
+                                attention_mask=b_input_mask, 
+                                labels=b_labels)
+    #       total_train_loss += loss.item()
+        loss.backward()
+        print(f'curr loss is {loss}')
+        # Clip the norm of the gradients to 1.0.
+        # This is to help prevent the "exploding gradients" problem.
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        optimizer.step()
+
+        from torch.utils.data import Dataset
+        from torch.utils.data import DataLoader
+        class Train_Dataset(Dataset):
+            def __init__(self):
+                super(Dataset, self).__init__()
+            def __getitem__(self, i):
+                return train_S1_tensor[i], train_S2_tensor[i], train_labels[i]
+            def __len__(self):
+                return len(train_labels)
+        dataset = Train_Dataset()
+
+        batch_size = 2048
+
+        train_loader = torch.utils.data.DataLoader( dataset, batch_size )

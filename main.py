@@ -110,7 +110,7 @@ def demo():
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
     bert_model = AutoModel.from_pretrained("bert-base-uncased")
     batch_size = 32
-    train_loader = torch.utils.data.DataLoader( trainset, batch_size )
+    train_loader = torch.utils.data.DataLoader( trainset, batch_size, shuffle=True )
     
     truths = []
     preds = []
