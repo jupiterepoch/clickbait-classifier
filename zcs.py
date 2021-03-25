@@ -165,3 +165,53 @@ def finetune_bert:
         batch_size = 2048
 
         train_loader = torch.utils.data.DataLoader( dataset, batch_size )
+
+
+'''+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'''
+'''
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(sentences, truths, test_size=0.01)
+class Trainset():
+    def __getitem__(self, i):
+        return X_train[i], y_train[i]
+    def __len__(self):
+        return len(y_train)
+class Testset():
+    def __getitem__(self, i):
+        return X_test[i], y_test[i]
+    def __len__(self):
+        return len(y_test)
+trainset, testset = Trainset(), Testset()
+
+import torch
+from torch.utils.data import DataLoader
+
+batch_size = 256
+train_loader = torch.utils.data.DataLoader( trainset, batch_size, shuffle=True )
+test_loader = torch.utils.data.DataLoader( testset, batch_size, shuffle=True )
+
+preds = []
+labels = []
+
+for data, label in test_loader:
+    similarity_scores = []
+    for sent_pair in data:
+        (title, sent) = sent_pair
+        input1 = tokenizer(title, return_tensors="pt", padding=True, max_length=512)
+        input2 = tokenizer(sent,  return_tensors="pt", padding=True, max_length=512)
+
+        #print(input1)
+        #print(input2)
+
+        with torch.no_grad():
+            outputs1 = bert_model(**input1)
+            outputs2 = bert_model(**input2)
+            attention1 = get_attentions(outputs1).detach()
+            attention2 = get_attentions(outputs2).detach()
+            similarity_scores.append( COS(attention1, attention2).item() )
+    score = np.mean(np.array(similarity_scores))
+    preds.append(score)
+    labels.append(label)
+'''
+'''+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'''

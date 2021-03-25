@@ -10,3 +10,4 @@ env.bak/
 venv.bak/
 webis-clickbait-16/
 data/
+.ipynb_checkpoints
