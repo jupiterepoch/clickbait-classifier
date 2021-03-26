@@ -10,5 +10,7 @@ ENV/
 env.bak/
 venv.bak/
 webis-clickbait-16/
-#data/
+data/media
 .ipynb_checkpoints
+data/webis-clickbait-16
+data/corpus-webis-clickbait-16.zip
